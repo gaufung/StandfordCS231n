@@ -23,12 +23,9 @@ def svm_loss_naive(W, X, y, reg, delta=1.0):
     for i in range(num_train):
         scores = W.dot(X[:, i])
         correct_class_score = scores[y[i]]
-        #indicator = (scores - correct_class_score + delta) > 0
         for j in range(num_classes):
             if j == y[i]:
-                #dW[j,:] += -np.sum(np.delete(indicator, j))*X[:,i].T
                 continue
-            #dW[j,:] += indicator[j] * X[:, i].T
             margin = scores[j] - correct_class_score + delta
             if margin > 0:
                 loss += margin
@@ -37,7 +34,6 @@ def svm_loss_naive(W, X, y, reg, delta=1.0):
                 dW[j, :] += X[:, i].T
     loss /= num_train
     dW /= num_train
-    # regularization
     loss += 0.5 * reg * np.sum(W*W)
     dW += reg*W
     return loss, dW
@@ -55,6 +51,18 @@ def svm_loss_vectorized(W, X, y, reg, delta=1.0):
     - loss as single float
     - gradient with respect to weight W; an array of same shape of W
     '''
+    loss = 0.0
+    num_train = X.shape[1]
+    dW = np.zeros(W.shape)
+    scores = W.dot(X)
+    Loss = scores - scores[y,np.arange(num_train)] + delta
+    Loss[y, np.arange(num_train)] = 0
+    margin_bool = Loss > 0
+    Loss = np.sum(Loss*margin_bool, axis=0) - delta
+    regularization = 0.5 * reg * np.sum(W*W)
+    loss = np.sum(Loss) / num_train + regularization
+    
+    
     # loss = 0.0
     # num_train = X.shape[1]
     # dW = np.zeros(W.shape)
